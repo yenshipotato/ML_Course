@@ -34,53 +34,47 @@ def ml_loop(side: str):
 
     def ml_loop_for_1P(): 
         if scene_info["ball_speed"][1] > 0 : # 球正在向下 # ball goes down
-            
-            pred = scene_info["ball"][0]+(420-scene_info["ball"][1])//scene_info["ball_speed"][1]*scene_info["ball_speed"][0]
-            bound = pred // 200 # Determine if it is beyond the boundary
-            if (bound > 0): # pred > 200 # fix landing position
-                if (bound%2 == 0) : 
-                    pred = pred - bound*200                    
-                else :
-                    pred = 200 - (pred - 200*bound)
-            elif (bound < 0) : # pred < 0
-                if (bound%2 ==1) :
-                    pred = abs(pred - (bound+1) *200)
-                else :
-                    pred = pred + (abs(bound)*200)
-            return move_to(player = '1P',pred = pred)
-            '''
-            if scene_info["ball"][1]<240 :
-                x = ( scene_info["platform_1P"][1]-scene_info["ball"][1] ) // scene_info["ball_speed"][1] # 幾個frame以後會需要接  # x means how many frames before catch the ball
-                pred = scene_info["ball"][0]+(scene_info["ball_speed"][0]*x)  # 預測最終位置 # pred means predict ball landing site 
-                bound = pred // 200 # Determine if it is beyond the boundary
-                if (bound > 0): # pred > 200 # fix landing position
-                    if (bound%2 == 0) : 
-                        pred = pred - bound*200                    
-                    else :
-                        pred = 200 - (pred - 200*bound)
-                elif (bound < 0) : # pred < 0
-                    if (bound%2 ==1) :
-                        pred = abs(pred - (bound+1) *200)
-                    else :
-                        pred = pred + (abs(bound)*200)
+            if (scene_info["ball"][1] > (scene_info["blocker"][1]+20)) : 
+                pred = scene_info["ball"][0]+2+(scene_info["ball_speed"][0]//scene_info["ball_speed"][1])*(scene_info["platform_1P"][1] - (scene_info["ball"][1]+5))
+                pred = abs(pred)%(200*2)
+                if pred > 200 :
+                    pred = 200*2-pred
                 return move_to(player = '1P',pred = pred)
-            '''
-                
-        else : # 球正在向上 # ball goes up
-            if scene_info["ball"][1]>0 :
-                pred=((scene_info["ball"][1]-100)//scene_info["ball_speed"][1])*scene_info["ball_speed"][0]+scene_info["ball"][0]
-                bound = pred//200
+            else :
+                pred = scene_info["ball"][0]+2+((scene_info["ball_speed"][0]//scene_info["ball_speed"][1])*((scene_info["blocker"][1]+20) - scene_info["ball"][1]))
+                pred = abs(pred)% (200*2)
+                if pred > 200 :
+                    pred = 200*2-pred
+                    
+                dist = ((scene_info["blocker"][1]+20) - scene_info["ball"][1])//scene_info["ball_speed"][1]
+                blkPred = scene_info["blocker"][0] + dist*5
+                if (pred >= blkPred and pred <= blkPred+30) :
+                    if (abs(pred - blkPred) <= 15) :
+                        pred = blkPred+(-1*abs(scene_info["ball_speed"][1])//scene_info["ball_speed"][1])*(scene_info["platform_1P"][1] - (scene_info["blocker"][1]+10))
+                        pred = abs(pred)% (200*2)
+                        if pred > 200 :
+                            pred = 200*2-pred
 
-                if (bound > 0): # pred > 200 # fix landing position
-                    if (bound%2 == 0) : 
-                        pred = pred - bound*200                    
+                            
                     else :
-                        pred = 200 - (pred - 200*bound)
-                elif (bound < 0) : # pred < 0
-                    if (bound%2 ==1) :
-                        pred = abs(pred - (bound+1) *200)
-                    else :
-                        pred = pred + (abs(bound)*200)
+                        pred = blkPred+30+(abs(scene_info["ball_speed"][1])//scene_info["ball_speed"][1])*(scene_info["platform_1P"][1] - (scene_info["blocker"][1]+10))
+                        pred = abs(pred)% (200*2)
+                        if pred > 200 :
+                            pred = 200*2-pred
+                            
+                else :
+                    pred =scene_info["ball"][0]+2+(scene_info["ball_speed"][0]//scene_info["ball_speed"][1])*(scene_info["platform_1P"][1] - (scene_info["ball"][1]+5))
+                    pred = abs(pred)% (200*2)
+                    if pred > 200 :
+                        pred = 200*2-pred
+                return move_to(player = '1P',pred = pred)
+
+        else : # 球正在向上 # ball goes up
+            if (scene_info["ball"][1] > scene_info["blocker"][1]+20) : 
+                pred =scene_info["ball"][0]+2+(scene_info["ball_speed"][0]//-1*scene_info["ball_speed"][1])*(scene_info["platform_1P"][1] + scene_info["ball"][1] - 2*(scene_info["blocker"][1]+20))
+                pred = abs(pred)% (200*2)
+                if pred > 200 :
+                    pred = 200*2-pred
                 return move_to(player = '1P',pred = pred)
             else :
                 return move_to(player = '1P',pred = 100)
@@ -121,6 +115,8 @@ def ml_loop(side: str):
                 else :
                     pred = pred + (abs(bound)*200)
             return move_to(player = '2P',pred = pred)
+       
+     
 
     # 2. Inform the game process that ml process is ready
     comm.ml_ready()
